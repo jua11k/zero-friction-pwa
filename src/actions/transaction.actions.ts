@@ -25,21 +25,7 @@ export async function createTransactionAction(formData: FormData) {
       description: payload.description as string,
     });
 
-    // Fire-and-Forget Webhook n8n (No awaited)
-    const webhookUrl = process.env.N8N_AI_WEBHOOK_URL;
-    if (webhookUrl) {
-      fetch(webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: tx.id,
-          tenant_id: tx.tenantId,
-          description: tx.description,
-          amount: tx.amount,
-          type: tx.type
-        })
-      }).catch(err => console.error("Webhook error (Ignorado):", err));
-    }
+
 
     revalidatePath("/");
     revalidatePath("/reportes");

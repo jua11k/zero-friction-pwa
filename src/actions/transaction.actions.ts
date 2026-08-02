@@ -2,10 +2,10 @@
 
 import { insertTransactionSchema } from "@/db/schema/transactions";
 import { TransactionService } from "@/services/transaction.service";
+import { revalidatePath } from "next/cache";
 
 export async function createTransactionAction(formData: FormData) {
   try {
-    // Regla 04: Aislamiento Tenant (mocked temporal para MVP sin auth)
     const MOCK_TENANT_ID = "00000000-0000-0000-0000-000000000000";
 
     const payload = {
@@ -15,7 +15,6 @@ export async function createTransactionAction(formData: FormData) {
       tenantId: MOCK_TENANT_ID,
     };
 
-    // Validación Zod
     const validatedData = insertTransactionSchema.parse(payload);
 
     // Llamado al servicio
@@ -25,6 +24,26 @@ export async function createTransactionAction(formData: FormData) {
       amount: validatedData.amount.toString(),
       description: payload.description as string,
     });
+
+    // Fire-and-Forget Webhook n8n (No awaited)
+    const webhookUrl = process.env.N8N_AI_WEBHOOK_URL;
+    if (webhookUrl) {
+      fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: tx.id,
+          tenant_id: tx.tenantId,
+          description: tx.description,
+          amount: tx.amount,
+          type: tx.type
+        })
+      }).catch(err => console.error("Webhook error (Ignorado):", err));
+    }
+
+    revalidatePath("/");
+    revalidatePath("/reportes");
+
     return { success: true, data: tx };
   } catch (error: any) {
     console.error("[Action Error]:", error);

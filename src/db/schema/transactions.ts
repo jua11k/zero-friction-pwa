@@ -25,6 +25,6 @@ export const transactions = pgTable("transactions", {
 
 // Zod Schema overriding
 export const insertTransactionSchema = createInsertSchema(transactions, {
-  description: (schema) => schema.description.trim().min(1, "La descripción es requerida").max(50, "Máximo 50 caracteres"),
+  description: z.string().trim().min(1, "La descripción es requerida").max(50, "Máximo 50 caracteres"),
   amount: z.coerce.number().positive("El monto debe ser positivo"),
 });

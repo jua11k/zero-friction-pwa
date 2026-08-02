@@ -4,6 +4,7 @@ import { Drawer } from "vaul";
 import { useKeyboardStore } from "@/store/useKeyboardStore";
 import { useState } from "react";
 import { createTransactionAction } from "@/actions/transaction.actions";
+import { createDebtAction } from "@/actions/debt.actions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -119,13 +120,14 @@ export default function KeyboardDrawer() {
                   const fd = new FormData();
                   fd.append("amount", amount);
                   fd.append("debtorName", description);
-                  const { createDebtAction } = await import("@/actions/debt.actions");
+                  fd.append("description", "Fiado rápido");
+                  
                   const res = await createDebtAction(fd);
                   setLoading(false);
                   if (res?.success) {
                     toast.success("Pendiente guardado");
                     setAmount(""); setDescription(""); closeDrawer();
-                  } else toast.error("Error al guardar");
+                  } else toast.error(res?.error || "Error al guardar");
                 }}
                 disabled={loading}
                 className="h-14 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-2xl shadow-lg shadow-amber-500/20 active:scale-95 transition-transform text-[13px]"

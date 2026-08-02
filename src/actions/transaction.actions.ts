@@ -19,8 +19,12 @@ export async function createTransactionAction(formData: FormData) {
     const validatedData = insertTransactionSchema.parse(payload);
 
     // Llamado al servicio
-    const tx = await TransactionService.create(validatedData);
-
+    const tx = await TransactionService.create({
+      tenantId: validatedData.tenantId as string,
+      type: validatedData.type as "INCOME" | "EXPENSE",
+      amount: validatedData.amount.toString(),
+      description: payload.description as string,
+    });
     return { success: true, data: tx };
   } catch (error: any) {
     console.error("[Action Error]:", error);

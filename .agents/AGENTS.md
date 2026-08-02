@@ -9,6 +9,7 @@ Cualquier archivo o estructura de carpetas nueva que se cree en el proyecto (por
 Debido al rigor de Next.js 15 durante el `next build`:
 - **Atributos de React:** Nunca utilices propiedades HTML exclusivas de un tag en otro que no le corresponde (ej. `noValidate` es de `<form>`, nunca de `<input>`).
 - **Mapeo Drizzle-Zod:** Cuando valides un payload de un Server Action usando un esquema generado por Drizzle-Zod (`createInsertSchema`), mapea explícitamente las variables (ej. `amount.toString()`, `description as string`) antes de enviarlo al servicio de Drizzle. La inferencia automática de Zod y los coerciones numéricas provocan desajustes (`Type error`) con el tipo `$inferInsert` estricto que exige el servicio.
+- **Sobreescritura de esquemas en Drizzle-Zod:** Cuando uses `createInsertSchema` y necesites sobreescribir la validación de un campo, **EVITA** usar el callback con inferencia: `(schema) => schema.campo...` ya que TypeScript puede quejarse de que es "possibly undefined" durante el `next build`. En su lugar, usa la definición estricta y directa de Zod, por ejemplo: `campo: z.string().trim().min(1)`.
 
 ## 3. Prevención antes del Despliegue
 Antes de indicar que el código está listo para desplegar, asegúrate de que todas las variables o importaciones creadas correspondan exactamente al contrato de tipos requerido y que no existan atributos inválidos en la estructura del DOM de React.

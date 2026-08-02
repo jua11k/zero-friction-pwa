@@ -62,7 +62,6 @@ export default function TecladoPage() {
           maxLength={50}
           placeholder="¿En qué fue? (ej. Café)"
           className="w-full text-center text-lg bg-muted border-none h-14 rounded-xl px-4 focus:ring-2 focus:ring-primary outline-none"
-          noValidate
           disabled={loading}
         />
       </div>

@@ -3,17 +3,11 @@ import { db } from "@/db";
 
 export class TransactionService {
   static async create(data: typeof transactions.$inferInsert) {
-    // Para el MVP mockeamos la respuesta simulando inserción
-    // const [tx] = await db.insert(transactions).values({...data, status: "PENDING_AI"}).returning();
-    
-    const tx = {
-      id: crypto.randomUUID(),
-      tenantId: data.tenantId,
-      type: data.type,
-      amount: data.amount,
-      description: data.description,
+    // Inserción real en base de datos PostgreSQL
+    const [tx] = await db.insert(transactions).values({
+      ...data, 
       status: "PENDING_AI"
-    };
+    }).returning();
 
     // FASE 4: Integración IA Asíncrona (Fire-and-Forget) - Regla 06
     if (process.env.N8N_AI_WEBHOOK_URL) {

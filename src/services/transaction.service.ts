@@ -17,6 +17,7 @@ export class TransactionService {
         body: JSON.stringify({
           tenant_id: tx.tenantId,
           transaction_id: tx.id,
+          id: tx.id, // Añadido para compatibilidad directa con el nodo de n8n
           type: tx.type,
           amount: tx.amount,
           description: tx.description

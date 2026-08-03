@@ -4,6 +4,7 @@ import { createInsertSchema } from "drizzle-zod";
 export const tenants = pgTable("tenants", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).unique(), // Añadido para Auth
   config: jsonb("config").default({}),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

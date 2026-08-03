@@ -4,16 +4,23 @@ import { db } from "@/db";
 import { transactions } from "@/db/schema/transactions";
 import { desc, eq, isNotNull } from "drizzle-orm";
 import ReportCharts from "@/components/dashboard/ReportCharts";
+import { auth } from "@/../auth";
+import { getOrCreateTenant } from "@/lib/auth-helpers";
+import { redirect } from "next/navigation";
 
 export const revalidate = 0;
 
 export default async function ReportesPage() {
-  const MOCK_TENANT_ID = "00000000-0000-0000-0000-000000000000";
+  const session = await auth();
+  if (!session?.user?.email) {
+    redirect("/login");
+  }
+  const tenantId = await getOrCreateTenant(session.user.email);
   
   // Obtener todas las transacciones categorizadas
   const data = await db.select()
     .from(transactions)
-    .where(eq(transactions.tenantId, MOCK_TENANT_ID))
+    .where(eq(transactions.tenantId, tenantId))
     .orderBy(desc(transactions.createdAt));
 
   return (

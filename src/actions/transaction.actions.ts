@@ -3,16 +3,20 @@
 import { insertTransactionSchema } from "@/db/schema/transactions";
 import { TransactionService } from "@/services/transaction.service";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/../auth";
+import { getOrCreateTenant } from "@/lib/auth-helpers";
 
 export async function createTransactionAction(formData: FormData) {
   try {
-    const MOCK_TENANT_ID = "00000000-0000-0000-0000-000000000000";
+    const session = await auth();
+    if (!session?.user?.email) throw new Error("No autenticado");
+    const tenantId = await getOrCreateTenant(session.user.email);
 
     const payload = {
       amount: formData.get("amount"),
       description: formData.get("description"),
       type: formData.get("type"),
-      tenantId: MOCK_TENANT_ID,
+      tenantId: tenantId,
     };
 
     const validatedData = insertTransactionSchema.parse(payload);

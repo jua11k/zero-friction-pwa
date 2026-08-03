@@ -5,10 +5,14 @@ import { debts, insertDebtSchema } from "@/db/schema/debts";
 import { customers } from "@/db/schema/customers";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/../auth";
+import { getOrCreateTenant } from "@/lib/auth-helpers";
 
 export async function createDebtAction(formData: FormData) {
   try {
-    const MOCK_TENANT_ID = "00000000-0000-0000-0000-000000000000";
+    const session = await auth();
+    if (!session?.user?.email) throw new Error("No autenticado");
+    const tenantId = await getOrCreateTenant(session.user.email);
     
     const phone = formData.get("phone")?.toString().trim();
     const name = formData.get("name")?.toString().trim();
@@ -22,14 +26,14 @@ export async function createDebtAction(formData: FormData) {
     // Upsert Customer logic
     let customer = await db.query.customers.findFirst({
       where: and(
-        eq(customers.tenantId, MOCK_TENANT_ID),
+        eq(customers.tenantId, tenantId),
         eq(customers.phone, phone)
       ),
     });
 
     if (!customer) {
       const [newCustomer] = await db.insert(customers).values({
-        tenantId: MOCK_TENANT_ID,
+        tenantId: tenantId,
         phone,
         name,
       }).returning();
@@ -46,14 +50,15 @@ export async function createDebtAction(formData: FormData) {
     const payload = {
       amount,
       description,
-      tenantId: MOCK_TENANT_ID,
+      tenantId: tenantId,
+      customerId: customer.id,
     };
 
     const validatedData = insertDebtSchema.parse(payload);
 
     await db.insert(debts).values({
       tenantId: validatedData.tenantId as string,
-      customerId: customer.id,
+      customerId: validatedData.customerId as string,
       amount: validatedData.amount.toString(),
       description: validatedData.description as string,
       status: "PENDING",

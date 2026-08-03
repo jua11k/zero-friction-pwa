@@ -6,11 +6,18 @@ import { Users, Phone, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { auth } from "@/../auth";
+import { getOrCreateTenant } from "@/lib/auth-helpers";
+import { redirect } from "next/navigation";
 
 export const revalidate = 0;
 
 export default async function PendientesPage() {
-  const MOCK_TENANT_ID = "00000000-0000-0000-0000-000000000000";
+  const session = await auth();
+  if (!session?.user?.email) {
+    redirect("/login");
+  }
+  const tenantId = await getOrCreateTenant(session.user.email);
   
   const data = await db.select({
     id: debts.id,
@@ -23,7 +30,7 @@ export default async function PendientesPage() {
   })
     .from(debts)
     .leftJoin(customers, eq(debts.customerId, customers.id))
-    .where(eq(debts.tenantId, MOCK_TENANT_ID))
+    .where(eq(debts.tenantId, tenantId))
     .orderBy(desc(debts.createdAt));
 
   const totalDeuda = data.filter(d => d.status === "PENDING").reduce((acc, d) => acc + parseFloat(d.amount), 0);

@@ -3,12 +3,18 @@ import { transactions } from "@/db/schema/transactions";
 import { desc, eq, and, sql } from "drizzle-orm";
 import TransactionList from "@/components/dashboard/TransactionList";
 import { Search, Calendar, ArrowUpRight, ArrowDownRight, Wallet } from "lucide-react";
+import { auth } from "@/../auth";
+import { getOrCreateTenant } from "@/lib/auth-helpers";
+import { redirect } from "next/navigation";
 
 export const revalidate = 0; // Disable cache to see immediate updates
 
 export default async function Dashboard() {
-  // Demo tenant ID
-  const tenantId = "00000000-0000-0000-0000-000000000000";
+  const session = await auth();
+  if (!session?.user?.email) {
+    redirect("/login");
+  }
+  const tenantId = await getOrCreateTenant(session.user.email);
   
   // O(1) in DB querying
   const data = await db.select().from(transactions).where(eq(transactions.tenantId, tenantId)).orderBy(desc(transactions.createdAt));

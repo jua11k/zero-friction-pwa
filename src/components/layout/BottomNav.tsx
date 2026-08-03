@@ -15,6 +15,9 @@ export default function BottomNav() {
   const pathname = usePathname();
   const openDrawer = useKeyboardStore((state) => state.openDrawer);
 
+  // Ocultar la barra de navegación en la página de login (Landing Page)
+  if (pathname === "/login") return null;
+
   const tabs = [
     { name: "Inicio", href: "/", icon: Home },
     { name: "Pendientes", href: "/pendientes", icon: Users },

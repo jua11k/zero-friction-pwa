@@ -19,6 +19,7 @@ export async function getOrCreateTenant(email: string | null | undefined): Promi
   // Crear si no existe
   const [newTenant] = await db.insert(tenants).values({
     name: `Negocio de ${email.split("@")[0]}`,
+    slug: crypto.randomUUID(), // El slug es obligatorio en tu BD
     email: email,
   }).returning();
 

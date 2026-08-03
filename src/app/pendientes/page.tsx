@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { debts } from "@/db/schema/debts";
+import { customers } from "@/db/schema/customers";
 import { desc, eq } from "drizzle-orm";
 import { Users, Phone, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -11,8 +12,17 @@ export const revalidate = 0;
 export default async function PendientesPage() {
   const MOCK_TENANT_ID = "00000000-0000-0000-0000-000000000000";
   
-  const data = await db.select()
+  const data = await db.select({
+    id: debts.id,
+    amount: debts.amount,
+    description: debts.description,
+    status: debts.status,
+    createdAt: debts.createdAt,
+    customerName: customers.name,
+    customerPhone: customers.phone,
+  })
     .from(debts)
+    .leftJoin(customers, eq(debts.customerId, customers.id))
     .where(eq(debts.tenantId, MOCK_TENANT_ID))
     .orderBy(desc(debts.createdAt));
 
@@ -20,7 +30,7 @@ export default async function PendientesPage() {
   const pendientesCount = data.filter(d => d.status === "PENDING").length;
 
   return (
-    <div className="min-h-full flex flex-col p-5">
+    <div className="min-h-full flex flex-col p-5 pb-24">
       <header className="flex items-center gap-4 py-2 mb-6">
         <Link href="/" className="p-2 -ml-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
           <ArrowLeft className="w-6 h-6 text-zinc-600 dark:text-zinc-300" />
@@ -37,7 +47,7 @@ export default async function PendientesPage() {
           <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
             <Users className="w-6 h-6 text-amber-600 dark:text-amber-400" strokeWidth={2.5} />
           </div>
-          <span className="text-sm font-bold text-amber-600/70 dark:text-amber-400/70 bg-amber-100/50 dark:bg-amber-900/30 px-3 py-1.5 rounded-full">{pendientesCount} personas</span>
+          <span className="text-sm font-bold text-amber-600/70 dark:text-amber-400/70 bg-amber-100/50 dark:bg-amber-900/30 px-3 py-1.5 rounded-full">{pendientesCount} registros</span>
         </div>
         <p className="text-sm font-semibold text-amber-700/80 dark:text-amber-300/80 mb-1">Total por cobrar</p>
         <h2 className="text-3xl font-bold tracking-tight text-amber-800 dark:text-amber-400 break-all">${totalDeuda.toLocaleString("en-US", { minimumFractionDigits: 2 })}</h2>
@@ -46,14 +56,16 @@ export default async function PendientesPage() {
       <div className="flex flex-col gap-4">
         {data.map(debt => {
           const isPending = debt.status === "PENDING";
-          const wpMessage = encodeURIComponent(`Hola ${debt.debtorName}, te escribo para recordarte el pago pendiente de $${parseFloat(debt.amount).toLocaleString()} por concepto de: ${debt.description || 'Fiado'}. ¡Gracias!`);
-          const wpLink = `https://wa.me/?text=${wpMessage}`;
+          const parsedPhone = debt.customerPhone?.replace(/\D/g,'') || "";
+          // Format whatsapp link with the parsed phone
+          const wpMessage = encodeURIComponent(`Hola ${debt.customerName}, te escribo para recordarte el pago pendiente de $${parseFloat(debt.amount).toLocaleString()} por concepto de: ${debt.description || 'Fiado'}. ¡Gracias!`);
+          const wpLink = `https://wa.me/${parsedPhone}?text=${wpMessage}`;
 
           return (
             <div key={debt.id} className="flex flex-col bg-white dark:bg-zinc-900/50 p-5 rounded-[20px] shadow-sm border border-zinc-100 dark:border-zinc-800">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex flex-col">
-                  <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100">{debt.debtorName}</h3>
+                  <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100">{debt.customerName || "Desconocido"}</h3>
                   <span className="text-sm text-zinc-500">{debt.description || "Sin detalle"} • {format(new Date(debt.createdAt), "dd MMM", { locale: es })}</span>
                 </div>
                 <div className="flex flex-col items-end">
@@ -64,7 +76,7 @@ export default async function PendientesPage() {
                 </div>
               </div>
 
-              {isPending && (
+              {isPending && debt.customerPhone && (
                 <div className="flex gap-3 mt-2 border-t border-zinc-100 dark:border-zinc-800 pt-4">
                   <a href={wpLink} target="_blank" rel="noopener noreferrer" className="flex-1 h-11 flex items-center justify-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] font-semibold rounded-xl transition-colors">
                     <Phone className="w-4 h-4" />
@@ -82,3 +94,4 @@ export default async function PendientesPage() {
     </div>
   )
 }
+

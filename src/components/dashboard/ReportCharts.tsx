@@ -85,7 +85,7 @@ export default function ReportCharts({ data }: { data: Transaction[] }) {
               <XAxis type="number" hide />
               <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
               <Tooltip formatter={(value: any) => `$${Number(value).toLocaleString()}`} cursor={{ fill: 'transparent' }} />
-              <Bar dataKey="value" fill="#10b981" radius={[0, 4, 4, 0]} barSize={20} label={{ position: 'right', fill: '#10b981', fontSize: 12, formatter: (val: number) => `$${val.toLocaleString()}` }} />
+              <Bar dataKey="value" fill="#10b981" radius={[0, 4, 4, 0]} barSize={20} label={{ position: 'right', fill: '#10b981', fontSize: 12, formatter: (val: any) => `$${Number(val || 0).toLocaleString()}` }} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -100,7 +100,7 @@ export default function ReportCharts({ data }: { data: Transaction[] }) {
               <XAxis type="number" hide />
               <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
               <Tooltip formatter={(value: any) => `$${Number(value).toLocaleString()}`} cursor={{ fill: 'transparent' }} />
-              <Bar dataKey="value" fill="#f43f5e" radius={[0, 4, 4, 0]} barSize={20} label={{ position: 'right', fill: '#f43f5e', fontSize: 12, formatter: (val: number) => `$${val.toLocaleString()}` }} />
+              <Bar dataKey="value" fill="#f43f5e" radius={[0, 4, 4, 0]} barSize={20} label={{ position: 'right', fill: '#f43f5e', fontSize: 12, formatter: (val: any) => `$${Number(val || 0).toLocaleString()}` }} />
             </BarChart>
           </ResponsiveContainer>
         </div>

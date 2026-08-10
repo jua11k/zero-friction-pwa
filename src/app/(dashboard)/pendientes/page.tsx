@@ -9,6 +9,7 @@ import { es } from "date-fns/locale";
 import { auth } from "@/../auth";
 import { getOrCreateTenant } from "@/lib/auth-helpers";
 import { redirect } from "next/navigation";
+import { markDebtAsPaidAction } from "@/actions/debt.actions";
 
 export const revalidate = 0;
 
@@ -87,8 +88,16 @@ export default async function PendientesPage() {
                 <div className="flex gap-3 mt-2 border-t border-zinc-100 dark:border-zinc-800 pt-4">
                   <a href={wpLink} target="_blank" rel="noopener noreferrer" className="flex-1 h-11 flex items-center justify-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] font-semibold rounded-xl transition-colors">
                     <Phone className="w-4 h-4" />
-                    Cobrar por WhatsApp
+                    Cobrar
                   </a>
+                  <form action={async () => {
+                    "use server";
+                    await markDebtAsPaidAction(debt.id);
+                  }} className="flex-1">
+                    <button type="submit" className="w-full h-11 flex items-center justify-center gap-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 dark:text-emerald-400 font-semibold rounded-xl transition-colors">
+                      Pagado
+                    </button>
+                  </form>
                 </div>
               )}
             </div>

@@ -2,23 +2,64 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { db } from "@/db";
 import { transactions } from "@/db/schema/transactions";
-import { desc, eq, isNotNull } from "drizzle-orm";
+import { desc, eq, and, gte, lte } from "drizzle-orm";
 import { categories } from "@/db/schema/categories";
 import ReportCharts from "@/components/dashboard/ReportCharts";
+import ReportFilters from "@/components/dashboard/ReportFilters";
 import { auth } from "@/../auth";
 import { getOrCreateTenant } from "@/lib/auth-helpers";
 import { redirect } from "next/navigation";
 
 export const revalidate = 0;
 
-export default async function ReportesPage() {
+export default async function ReportesPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
   const session = await auth();
   if (!session?.user?.email) {
     redirect("/login");
   }
   const tenantId = await getOrCreateTenant(session.user.email);
   
-  // Obtener todas las transacciones categorizadas
+  // Extraer parámetros de búsqueda (Next.js 16+ asincrónico)
+  const params = await searchParams;
+  
+  // Por defecto, mes actual si no hay nada seleccionado
+  const monthParam = params.month || new Date().toISOString().slice(0, 7); // "YYYY-MM"
+  const startOfMonth = new Date(`${monthParam}-01T00:00:00.000Z`);
+  
+  // Fin de mes (sumar 1 mes, restar 1 milisegundo)
+  const endOfMonth = new Date(startOfMonth);
+  endOfMonth.setUTCMonth(endOfMonth.getUTCMonth() + 1);
+  endOfMonth.setUTCMilliseconds(-1);
+
+  // Construir condiciones dinámicas
+  const conditions = [
+    eq(transactions.tenantId, tenantId),
+    gte(transactions.createdAt, startOfMonth),
+    lte(transactions.createdAt, endOfMonth)
+  ];
+
+  if (params.category) {
+    conditions.push(eq(transactions.categoryId, params.category));
+  }
+
+  if (params.type && (params.type === "INCOME" || params.type === "EXPENSE")) {
+    conditions.push(eq(transactions.type, params.type));
+  }
+  
+  // Obtener categorías para el filtro
+  const tenant = await db.query.tenants.findFirst({
+    where: (t, { eq }) => eq(t.id, tenantId)
+  });
+  
+  let tenantCategories: any[] = [];
+  if (tenant?.businessTypeId) {
+    tenantCategories = await db.select({ id: categories.id, description: categories.description })
+      .from(categories)
+      .where(eq(categories.businessTypeId, tenant.businessTypeId))
+      .orderBy(categories.description);
+  }
+
+  // Obtener transacciones filtradas de forma eficiente
   const rawData = await db.select({
     id: transactions.id,
     tenantId: transactions.tenantId,
@@ -32,7 +73,7 @@ export default async function ReportesPage() {
   })
     .from(transactions)
     .leftJoin(categories, eq(transactions.categoryId, categories.id))
-    .where(eq(transactions.tenantId, tenantId))
+    .where(and(...conditions))
     .orderBy(desc(transactions.createdAt));
 
   const data = rawData.map(d => ({
@@ -51,6 +92,8 @@ export default async function ReportesPage() {
           <span className="text-xs text-zinc-500 font-medium tracking-wide">Analítica financiera IA</span>
         </div>
       </header>
+      
+      <ReportFilters categories={tenantCategories} />
 
       {data.length > 0 ? (
         <ReportCharts data={data} />
@@ -58,7 +101,7 @@ export default async function ReportesPage() {
         <div className="flex flex-col items-center justify-center flex-1 py-20 text-center">
           <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">Sin datos suficientes</h2>
           <p className="text-zinc-500 max-w-xs mx-auto text-sm">
-            Registra tus primeros ingresos y egresos para que la IA empiece a generar tus reportes analíticos.
+            No hay transacciones registradas para los filtros actuales.
           </p>
         </div>
       )}

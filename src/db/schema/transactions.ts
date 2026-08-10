@@ -18,7 +18,8 @@ export const transactions = pgTable("transactions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => {
   return [
-    index("tenant_created_idx").on(table.tenantId, table.createdAt)
+    index("tenant_created_idx").on(table.tenantId, table.createdAt),
+    index("analytics_filters_idx").on(table.tenantId, table.type, table.categoryId, table.createdAt)
   ];
 });
 

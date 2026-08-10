@@ -17,7 +17,7 @@ export default function ReportCharts({ data }: { data: Transaction[] }) {
   const pieData = [
     { name: "Ingresos", value: totalIncome, color: "#10b981" },
     { name: "Egresos", value: totalExpense, color: "#f43f5e" }
-  ];
+  ].filter(d => d.value > 0);
 
   // Agrupador por categoría
   const groupByCategory = (type: "INCOME" | "EXPENSE") => {

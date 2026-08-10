@@ -54,13 +54,23 @@ export default function ReportCharts({ data }: { data: Transaction[] }) {
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+              <Pie 
+                data={pieData} 
+                cx="50%" 
+                cy="50%" 
+                innerRadius={60} 
+                outerRadius={80} 
+                paddingAngle={5} 
+                dataKey="value"
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                labelLine={true}
+              >
                 {pieData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
               <Tooltip formatter={(value: any) => `$${Number(value).toLocaleString()}`} />
-              <Legend />
+              <Legend verticalAlign="bottom" height={36} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -71,11 +81,11 @@ export default function ReportCharts({ data }: { data: Transaction[] }) {
         <h3 className="font-bold text-lg mb-4 text-emerald-600 dark:text-emerald-400">Ingresos por Categoría</h3>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={incomeCategories} layout="vertical" margin={{ left: 40 }}>
+            <BarChart data={incomeCategories} layout="vertical" margin={{ left: 40, right: 40 }}>
               <XAxis type="number" hide />
               <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
               <Tooltip formatter={(value: any) => `$${Number(value).toLocaleString()}`} cursor={{ fill: 'transparent' }} />
-              <Bar dataKey="value" fill="#10b981" radius={[0, 4, 4, 0]} barSize={20} />
+              <Bar dataKey="value" fill="#10b981" radius={[0, 4, 4, 0]} barSize={20} label={{ position: 'right', fill: '#10b981', fontSize: 12, formatter: (val: number) => `$${val.toLocaleString()}` }} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -86,11 +96,11 @@ export default function ReportCharts({ data }: { data: Transaction[] }) {
         <h3 className="font-bold text-lg mb-4 text-rose-600 dark:text-rose-400">Egresos por Categoría</h3>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={expenseCategories} layout="vertical" margin={{ left: 40 }}>
+            <BarChart data={expenseCategories} layout="vertical" margin={{ left: 40, right: 40 }}>
               <XAxis type="number" hide />
               <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
               <Tooltip formatter={(value: any) => `$${Number(value).toLocaleString()}`} cursor={{ fill: 'transparent' }} />
-              <Bar dataKey="value" fill="#f43f5e" radius={[0, 4, 4, 0]} barSize={20} />
+              <Bar dataKey="value" fill="#f43f5e" radius={[0, 4, 4, 0]} barSize={20} label={{ position: 'right', fill: '#f43f5e', fontSize: 12, formatter: (val: number) => `$${val.toLocaleString()}` }} />
             </BarChart>
           </ResponsiveContainer>
         </div>

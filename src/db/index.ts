@@ -4,6 +4,9 @@ import * as tenantsSchema from './schema/tenants';
 import * as transactionsSchema from './schema/transactions';
 import * as customersSchema from './schema/customers';
 import * as debtsSchema from './schema/debts';
+import * as businessTypesSchema from './schema/business_types';
+import * as categoriesSchema from './schema/categories';
+import * as enumsSchema from './schema/enums';
 
 const connectionString = process.env.DATABASE_URL || "";
 
@@ -14,6 +17,9 @@ export const db = drizzle(client, {
     ...tenantsSchema, 
     ...transactionsSchema, 
     ...customersSchema, 
-    ...debtsSchema 
+    ...debtsSchema,
+    ...businessTypesSchema,
+    ...categoriesSchema,
+    ...enumsSchema
   } 
 });

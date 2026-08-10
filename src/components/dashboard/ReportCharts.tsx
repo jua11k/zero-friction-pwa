@@ -6,7 +6,7 @@ interface Transaction {
   id: string;
   type: "INCOME" | "EXPENSE";
   amount: string;
-  aiCategory: string | null;
+  categoryName: string | null;
   createdAt: Date;
 }
 
@@ -22,7 +22,7 @@ export default function ReportCharts({ data }: { data: Transaction[] }) {
   // Agrupador por categoría
   const groupByCategory = (type: "INCOME" | "EXPENSE") => {
     const grouped = data.filter(t => t.type === type).reduce((acc, t) => {
-      const cat = t.aiCategory || "Sin Categoría";
+      const cat = t.categoryName || "Sin Categoría";
       acc[cat] = (acc[cat] || 0) + parseFloat(t.amount);
       return acc;
     }, {} as Record<string, number>);

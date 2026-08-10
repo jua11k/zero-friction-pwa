@@ -1,10 +1,9 @@
-import { pgTable, uuid, varchar, decimal, timestamp, pgEnum, index } from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, decimal, timestamp, index } from "drizzle-orm/pg-core";
 import { tenants } from "./tenants";
+import { categories } from "./categories";
+import { transactionTypeEnum, transactionStatusEnum } from "./enums";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-
-export const transactionTypeEnum = pgEnum("transaction_type", ["INCOME", "EXPENSE"]);
-export const transactionStatusEnum = pgEnum("transaction_status", ["PENDING_AI", "CATEGORIZED"]);
 
 export const transactions = pgTable("transactions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -14,7 +13,7 @@ export const transactions = pgTable("transactions", {
   type: transactionTypeEnum("type").notNull(),
   amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
   description: varchar("description", { length: 50 }).notNull(),
-  aiCategory: varchar("ai_category", { length: 50 }),
+  categoryId: uuid("category_id").references(() => categories.id),
   status: transactionStatusEnum("status").default("PENDING_AI").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => {

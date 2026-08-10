@@ -67,11 +67,11 @@ export default function TransactionList({ data }: { data: any[] }) {
                 <div key={tx.id} className="flex items-center justify-between bg-white dark:bg-zinc-900/50 p-4 rounded-2xl shadow-sm border border-zinc-100 dark:border-zinc-800">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                      {getIcon(tx.aiCategory)}
+                      {getIcon(tx.categoryName)}
                     </div>
                     <div className="flex flex-col">
                       <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-[15px]">{tx.description}</span>
-                      <span className="text-xs text-zinc-400 capitalize">{tx.aiCategory || "Pendiente"} • {format(new Date(tx.createdAt), "HH:mm")}</span>
+                      <span className="text-xs text-zinc-400 capitalize">{tx.categoryName || "Pendiente"} • {format(new Date(tx.createdAt), "HH:mm")}</span>
                     </div>
                   </div>
                   <div className={`font-semibold tracking-tight ${tx.type === 'INCOME' ? 'text-emerald-500' : 'text-zinc-900 dark:text-zinc-100'}`}>

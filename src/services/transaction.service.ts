@@ -2,7 +2,7 @@ import { transactions } from "@/db/schema/transactions";
 import { db } from "@/db";
 
 export class TransactionService {
-  static async create(data: typeof transactions.$inferInsert) {
+  static async create(data: typeof transactions.$inferInsert, allowedCategories: string[] = []) {
     // Inserción real en base de datos PostgreSQL
     const [tx] = await db.insert(transactions).values({
       ...data, 
@@ -20,7 +20,10 @@ export class TransactionService {
           id: tx.id, // Añadido para compatibilidad directa con el nodo de n8n
           type: tx.type,
           amount: tx.amount,
-          description: tx.description
+          description: tx.description,
+          context: {
+            allowed_categories: allowedCategories
+          }
         }),
       }).catch(err => console.error("Webhook Error:", err)); // Asíncrono puro sin await
     }
@@ -28,3 +31,4 @@ export class TransactionService {
     return tx;
   }
 }
+

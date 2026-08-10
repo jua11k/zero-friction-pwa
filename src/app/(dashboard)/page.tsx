@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { transactions } from "@/db/schema/transactions";
 import { desc, eq, and, sql } from "drizzle-orm";
+import { categories } from "@/db/schema/categories";
 import TransactionList from "@/components/dashboard/TransactionList";
 import { Search, Calendar, ArrowUpRight, ArrowDownRight, Wallet } from "lucide-react";
 import { auth } from "@/../auth";
@@ -16,8 +17,22 @@ export default async function Dashboard() {
   }
   const tenantId = await getOrCreateTenant(session.user.email);
   
-  // O(1) in DB querying
-  const data = await db.select().from(transactions).where(eq(transactions.tenantId, tenantId)).orderBy(desc(transactions.createdAt));
+  // O(1) in DB querying with left join
+  const data = await db.select({
+    id: transactions.id,
+    tenantId: transactions.tenantId,
+    type: transactions.type,
+    amount: transactions.amount,
+    description: transactions.description,
+    categoryId: transactions.categoryId,
+    status: transactions.status,
+    createdAt: transactions.createdAt,
+    categoryName: categories.description
+  })
+  .from(transactions)
+  .leftJoin(categories, eq(transactions.categoryId, categories.id))
+  .where(eq(transactions.tenantId, tenantId))
+  .orderBy(desc(transactions.createdAt));
   
   // Aggregate stats
   let incomeCount = 0;

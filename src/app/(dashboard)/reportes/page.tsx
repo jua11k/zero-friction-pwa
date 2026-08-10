@@ -3,6 +3,7 @@ import Link from "next/link";
 import { db } from "@/db";
 import { transactions } from "@/db/schema/transactions";
 import { desc, eq, isNotNull } from "drizzle-orm";
+import { categories } from "@/db/schema/categories";
 import ReportCharts from "@/components/dashboard/ReportCharts";
 import { auth } from "@/../auth";
 import { getOrCreateTenant } from "@/lib/auth-helpers";
@@ -18,8 +19,19 @@ export default async function ReportesPage() {
   const tenantId = await getOrCreateTenant(session.user.email);
   
   // Obtener todas las transacciones categorizadas
-  const data = await db.select()
+  const data = await db.select({
+    id: transactions.id,
+    tenantId: transactions.tenantId,
+    type: transactions.type,
+    amount: transactions.amount,
+    description: transactions.description,
+    categoryId: transactions.categoryId,
+    status: transactions.status,
+    createdAt: transactions.createdAt,
+    categoryName: categories.description
+  })
     .from(transactions)
+    .leftJoin(categories, eq(transactions.categoryId, categories.id))
     .where(eq(transactions.tenantId, tenantId))
     .orderBy(desc(transactions.createdAt));
 

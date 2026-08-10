@@ -18,10 +18,18 @@ export async function getOrCreateTenant(email: string | null | undefined): Promi
 
   // Crear si no existe
   const [newTenant] = await db.insert(tenants).values({
-    name: `Negocio de ${email.split("@")[0]}`,
+    name: "",
     slug: crypto.randomUUID(), // El slug es obligatorio en tu BD
     email: email,
   }).returning();
 
   return newTenant.id;
+}
+
+export async function getTenantProfile(email: string | null | undefined) {
+  if (!email) return null;
+  const existingTenant = await db.query.tenants.findFirst({
+    where: eq(tenants.email, email),
+  });
+  return existingTenant || null;
 }

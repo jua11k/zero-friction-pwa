@@ -17,7 +17,12 @@ export default async function OnboardingPage() {
     redirect("/");
   }
 
-  const types = await db.select().from(businessTypes).orderBy(businessTypes.name);
+  const rawTypes = await db.select().from(businessTypes).orderBy(businessTypes.name);
+  
+  const types = rawTypes.map(t => ({
+    ...t,
+    createdAt: t.createdAt instanceof Date ? t.createdAt.toISOString() : String(t.createdAt)
+  }));
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black p-6 flex flex-col justify-center items-center">

@@ -18,7 +18,7 @@ export default async function Dashboard() {
   const tenantId = await getOrCreateTenant(session.user.email);
   
   // O(1) in DB querying with left join
-  const data = await db.select({
+  const rawData = await db.select({
     id: transactions.id,
     tenantId: transactions.tenantId,
     type: transactions.type,
@@ -33,6 +33,11 @@ export default async function Dashboard() {
   .leftJoin(categories, eq(transactions.categoryId, categories.id))
   .where(eq(transactions.tenantId, tenantId))
   .orderBy(desc(transactions.createdAt));
+
+  const data = rawData.map(d => ({
+    ...d,
+    createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : String(d.createdAt)
+  }));
   
   // Aggregate stats
   let incomeCount = 0;

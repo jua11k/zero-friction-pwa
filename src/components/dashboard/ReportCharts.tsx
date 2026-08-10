@@ -7,7 +7,7 @@ interface Transaction {
   type: "INCOME" | "EXPENSE";
   amount: string;
   categoryName: string | null;
-  createdAt: Date;
+  createdAt: string;
 }
 
 export default function ReportCharts({ data }: { data: Transaction[] }) {
